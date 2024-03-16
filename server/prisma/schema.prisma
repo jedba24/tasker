@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model File {
+  id                 String               @id @default(uuid())
+  originalName       String               @db.VarChar(100)
+  key                String               @unique @db.VarChar(36)
+  size               Int
+  mime               String               @db.VarChar(50)
+  uploadedAt         DateTime
+  User               User[]
+  Team               Team[]
+  ProjectCardComment ProjectCardComment[]
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  firstName          String               @db.VarChar(20)
+  lastName           String               @db.VarChar(20)
+  email              String               @unique @db.VarChar(50)
+  passwordHash       String               @db.VarChar(255)
+  role               Role                 @default(USER)
+  bio                String?              @db.VarChar(200)
+  avatarFile         File?                @relation(fields: [avatarFileId], references: [id])
+  avatarFileId       String?
+  refreshToken       String?              @unique @db.VarChar(500)
+  registeredAt       DateTime             @default(now())
+  lastLoginAt        DateTime?
+  Team               Team[]
+  TeamMember         TeamMember[]
+  Project            Project[]
+  ProjectBoard       ProjectBoard[]
+  ProjectCard        ProjectCard[]
+  ProjectCardComment ProjectCardComment[]
+}
+
+model Team {
+  id          String       @id @default(uuid())
+  name        String       @db.VarChar(100)
+  description String?      @db.VarChar(250)
+  logoImage   File         @relation(fields: [logoImageId], references: [id])
+  logoImageId String
+  owner       User         @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  TeamMember  TeamMember[]
+  Project     Project[]
+
+  @@unique([name, ownerId])
+}
+
+model TeamMember {
+  id       String    @id @default(uuid())
+  team     Team      @relation(fields: [teamId], references: [id])
+  teamId   String
+  member   User      @relation(fields: [userId], references: [id])
+  userId   String
+  isActive Boolean   @default(false) // flip to active and set joinDate on join
+  joinDate DateTime?
+  leftDate DateTime
+}
+
+model Project {
+  id           String         @id @default(uuid())
+  author       User           @relation(fields: [authorId], references: [id])
+  authorId     String
+  title        String         @db.VarChar(100)
+  description  String?        @db.VarChar(250)
+  team         Team?          @relation(fields: [teamId], references: [id])
+  teamId       String? // null if personal
+  createdAt    DateTime       @default(now())
+  updatdAt     DateTime       @default(now())
+  ProjectBoard ProjectBoard[]
+}
+
+model ProjectBoard {
+  id          String        @id @default(uuid())
+  project     Project       @relation(fields: [projectId], references: [id])
+  projectId   String
+  title       String        @db.VarChar(100)
+  description String?       @db.VarChar(250)
+  author      User          @relation(fields: [authorId], references: [id])
+  authorId    String
+  createdAt   DateTime      @default(now())
+  updatdAt    DateTime      @default(now())
+  ProjectCard ProjectCard[]
+}
+
+model ProjectCard {
+  id                 String               @id @default(uuid())
+  projectBoard       ProjectBoard         @relation(fields: [projectBoardId], references: [id])
+  projectBoardId     String
+  title              String               @db.VarChar(100)
+  description        String?              @db.VarChar(250)
+  author             User                 @relation(fields: [authorId], references: [id])
+  authorId           String
+  createdAt          DateTime             @default(now())
+  updatdAt           DateTime             @default(now())
+  ProjectCardComment ProjectCardComment[]
+}
+
+model ProjectCardComment {
+  id            String      @id @default(uuid())
+  projectCard   ProjectCard @relation(fields: [projectCardId], references: [id])
+  projectCardId String
+  comment       String?     @db.VarChar(250)
+  imageFile     File?       @relation(fields: [imageFileId], references: [id])
+  imageFileId   String?
+  author        User        @relation(fields: [authorId], references: [id])
+  authorId      String
+}
