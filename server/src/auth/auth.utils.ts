@@ -24,7 +24,10 @@ export const signUserTokens = (p: TokenPayload) => {
 export const verifyUserToken = async ({
   type,
   payload,
-}: SignTokenPayload & { payload: string }): Promise<TokenPayload> => {
+}: {
+  type: SignTokenPayload["type"];
+  payload: string;
+}): Promise<TokenPayload> => {
   const { secret } =
     jwtConfig[type.toLocaleLowerCase() as keyof typeof jwtConfig];
   return new Promise((res, rej) => {

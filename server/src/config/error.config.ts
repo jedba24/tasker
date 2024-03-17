@@ -10,9 +10,9 @@ type CustomErrorProps = {
   status: keyof typeof errorCodes;
 };
 export default class CustomError extends Error {
-  public status: keyof typeof errorCodes;
+  public statusCode: number;
   constructor({ status, message }: CustomErrorProps) {
     super(message);
-    this.status = status;
+    this.statusCode = errorCodes[status as keyof typeof errorCodes];
   }
 }

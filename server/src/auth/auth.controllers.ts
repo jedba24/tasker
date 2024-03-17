@@ -8,7 +8,8 @@ import { cookieConfig } from "../config/cookie.config";
 
 export const registerUserHandler: RequestHandler = async (req, res, next) => {
   try {
-    const { email, password, ...restOfBody } = req.body as UserRegisterModel;
+    const { email, password, confirmPassword, ...restOfBody } =
+      req.body as UserRegisterModel;
     const foundUser = await db.user.findUnique({ where: { email } });
     //Check if user exists
     if (foundUser)
@@ -77,7 +78,7 @@ export const loginUserHandler: RequestHandler = async (req, res, next) => {
 export const refreshUserHandler: RequestHandler = async (req, res, next) => {
   try {
     // get refresh token and decode
-    const token = req.cookies.refreshToken;
+    const token = req.cookies?.refreshToken;
     if (!token)
       throw new CustomError({
         status: "NOT_AUTHORIZED",
@@ -107,7 +108,7 @@ export const refreshUserHandler: RequestHandler = async (req, res, next) => {
 export const logOffUserHandler: RequestHandler = async (req, res, next) => {
   try {
     // get refresh token and decode
-    const token = req.cookies.refreshToken;
+    const token = req.cookies?.refreshToken;
     if (!token) return res.status(200).json({ message: "Logged Out" });
     const { id } = await verifyUserToken({ type: "REFRESH", payload: token });
     // find user
