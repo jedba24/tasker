@@ -13,3 +13,6 @@ export const jwtConfig = {
 };
 
 export const PORT = parseInt((process.env.PORT as string) || "5000");
+export const NODE_ENV = (
+  process.env.NODE_ENV || "development"
+).toLowerCase() as "development" | "production";

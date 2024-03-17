@@ -1,6 +1,6 @@
 import express from "express";
 import { PORT } from "./config/env";
-import { db } from "./config/db";
+import { db } from "./config/db.config";
 
 const app = express();
 app.use(express.json());
